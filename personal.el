@@ -65,18 +65,17 @@
 (set-face-background 'region "blue")
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 (autoload 'ibuffer "ibuffer" "List buffers." t)
-(setq inhibit-startup-message t)
+(setq inhibit-startup-message nil)
 (scroll-bar-mode -1)
+
 (require 'whitespace)
 (setq whitespace-style '(face empty tabs lines-tail trailing))
 (global-whitespace-mode t)
+(setq delete-trailing-lines nil)
+(setq require-final-newline t)
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-;; highlight blank space, tabs and lilnes over 80 chars.
-(custom-set-faces
- '(my-tab-face            ((((class color)) (:background "red"))) t)
- '(my-trailing-space-face ((((class color)) (:background "red"))) t)
- '(my-long-line-face      ((((class color)) (:background "red"))) t))
-
+;; highlight blank space, tabs and lines over 80 chars.
 (add-hook 'font-lock-mode-hook
           (function
            (lambda ()
@@ -89,51 +88,29 @@
 
 ;;save desktop between sessions
 (require 'desktop)
-(setq history-length 250)
-(add-to-list 'desktop-globals-to-save 'file-name-history)
-(setq desktop-buffers-not-to-save
-      (concat "\\("
-              "^nn\\.a[0-9]+\\|\\.log\\|(ftp)\\|^tags\\|^TAGS"
-              "\\|\\.emacs.*\\|\\.diary\\|\\.newsrc-dribble\\|\\.bbdb"
-              "\\)$"))
-(add-to-list 'desktop-modes-not-to-save 'dired-mode)
-(add-to-list 'desktop-modes-not-to-save 'Info-mode)
-(add-to-list 'desktop-modes-not-to-save 'info-lookup-mode)
-(add-to-list 'desktop-modes-not-to-save 'fundamental-mode)
-
 (desktop-save-mode 1)
-(defun my-desktop-save ()
-  (interactive)
-  ;; Don't call desktop-save-in-desktop-dir, as it prints a message.
-  (if (eq (desktop-owner) (emacs-pid))
-      (desktop-save desktop-dirname)))
-(add-hook 'auto-save-hook 'my-desktop-save)
-
-;;; desktop-override-stal-locks.el begins here.
-(defun emacs-process-p (pid)
-  "If pid is the process ID of an emacs process, return it, else nil."
-  (when pid
-    (let* ((cmdline-file (concat "/proc/" (int-to-string pid) "/cmdline")))
-      (when (file-exists-p cmdline-file)
-        (with-temp-buffer
-          (insert-file-contents-literally cmdline-file)
-          (goto-char (point-min))
-          (search-forward "emacs" nil t)
-          pid)))))
-(defadvice desktop-owner (after pry-from-cold-dead-hands activate)
- "Don't allow dead emacsen to own the desktop file."
- (when (not (emacs-process-p ad-return-value))
-   (setq ad-return-value nil)))
-;;; desktop-override-stale-locks.el ends here
 
 ;;ibuffer
+(eval-after-load "ibuf-ext"
+  '(define-ibuffer-filter filename
+     "toggle current view to buffers with file or directory name matching QUALIFIER."
+     (:description "filename"
+      :reader (read-from-minibuffer "filter by file/directory name (regexp): "))
+     (ibuffer-awhen (or (buffer-local-value 'buffer-file-name buf)
+                        (buffer-local-value 'dired-directory buf))
+                    (string-match qualifier it))))
 (setq ibuffer-saved-filter-groups
      (quote (("default"
               ("dired" (mode . dired-mode))
+	      ("ruby"  (mode . ruby-mode))
+              ("emacs" (or
+                        (name . "^\\*scratch\\*$")
+                        (name . "^\\*Messages\\*$")
+                        (name . "^\\*personal\\*$"))
               ("pegasus" (name . "^\\*pegasus\\*$"))
               ("gemini" (name . "^\\*gemini*\\$"))
               ("marty_demo" (name . "^\\*marty_demo*\\$"))))))
-
+)
 (add-hook 'ibuffer-mode-hook
           (lambda ()
             (ibuffer-switch-to-saved-filter-groups "default")))
@@ -152,8 +129,32 @@
   (balance-windows))
 
 (global-set-key (kbd "C-c 3") 'wenshan-split-window-vertical)
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
-(setq require-final-newline t)
 
 (require 'ido)
 (ido-mode t)
+
+(require 'direx)
+(global-set-key (kbd "C-x C-j") 'direx:jump-to-directory)
+
+;; save cursor location  for each file each time visited
+(require 'saveplace)
+(setq-default save-place t)
+(setq save-place-file "~/.emacs.d/saved-places")
+(setq save-place-forget-unreadable-files nil)
+
+;; backup files into system temp directory instead of working dir
+(setq backup-directory-alist
+      '((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      '((".*" ,temporary-file-directory t )))
+
+;; remove temp files more than a week old
+(message "Deleting old backup files...")
+(let ((week (* 60 60 24 7))
+      (current (float-time (current-time))))
+  (dolist (file (directory-files temporary-file-directory t))
+    (when (and (backup-file-name-p file)
+               (> (- current (float-time (fifth (file-attributes file))))
+                  week))
+      (message "%s" file)
+      (delete-file file))))

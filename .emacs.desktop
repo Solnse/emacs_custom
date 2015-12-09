@@ -1,0 +1,62 @@
+;; -*- mode: emacs-lisp; coding: emacs-mule; -*-
+;; --------------------------------------------------------------------------
+;; Desktop File for Emacs
+;; --------------------------------------------------------------------------
+;; Created Wed Nov 18 11:40:56 2015
+;; Desktop file format version 206
+;; Emacs version 24.5.1
+
+;; Global section:
+(setq desktop-missing-file-warning nil)
+(setq tags-file-name nil)
+(setq tags-table-list nil)
+(setq search-ring nil)
+(setq regexp-search-ring nil)
+(setq register-alist nil)
+(setq file-name-history '("/home/chad/.emacs.d/customizations" "/home/chad/repos/pegasus/Gemfile" "~/.emacs.d/customizations/personal.el" "~/.emacs.d/customizations/peronal.el" "~/.emacs.d/customizations" "~/"))
+
+;; Buffer section -- buffers listed in same order as in buffer list:
+(desktop-create-buffer 206
+  "/home/chad/.emacs"
+  ".emacs"
+  'emacs-lisp-mode
+  '(linum-mode global-whitespace-mode)
+  780
+  '(780 nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/chad/repos/pegasus/app/components/pegasus/loan_manager.rb"
+  "loan_manager.rb"
+  'ruby-mode
+  '(flymake-mode linum-mode global-whitespace-mode inf-ruby-minor-mode)
+  1
+  '(nil nil)
+  nil
+  nil
+  '((indent-tabs-mode) (buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/chad/repos/pegasus/Gemfile"
+  "Gemfile"
+  'ruby-mode
+  '(flymake-mode linum-mode global-whitespace-mode inf-ruby-minor-mode)
+  1
+  '(nil nil)
+  nil
+  nil
+  '((indent-tabs-mode) (buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/chad/.emacs.d/customizations/personal.el"
+  "personal.el"
+  'emacs-lisp-mode
+  '(linum-mode global-whitespace-mode)
+  3850
+  '(3361 nil)
+  nil
+  nil
+  '((buffer-file-coding-system . prefer-utf-8-unix)))
+
